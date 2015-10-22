@@ -50,14 +50,12 @@ class WodifyScraper(object):
         Select(elem).select_by_visible_text(text)
 
         def admin_page_loaded(driver):
-            s = BeautifulSoup(driver.page_source, 'html.parser')
-            r = re.compile(r'^W_Theme_UI_wt\d+_block_wt\d_wtApplications$')
-            e = s.find(id=r)
-
-            elem = self.driver.find_element_by_id(e['id'])
-            text = 'Wodify Admin'
-
-            return Select(elem).first_selected_option.text == text
+            path = "//div/a/span[text()='Reports']"
+            try:
+                elem = self.driver.find_element_by_xpath(path)
+                return elem.is_displayed()
+            except:
+                return False
 
         wait = WebDriverWait(self.driver, 10)
         wait.until(admin_page_loaded)
@@ -83,8 +81,8 @@ class WodifyScraper(object):
         elem = self.driver.find_element_by_xpath("//div/a[text()='Performance Results']")
         elem.click()
 
-        def reports_loaded(driver):
-            path = "//div/a/span[text()='Performance Results: Weightlifting']"
+        def performance_results_loaded(driver):
+            path = "//td/a/span[text()='Performance Results: Weightlifting']"
             try:
                 elem = self.driver.find_element_by_xpath(path)
                 return elem.is_displayed()
@@ -92,12 +90,12 @@ class WodifyScraper(object):
                 return False
 
         wait = WebDriverWait(self.driver, 10)
-        wait.until(reports_loaded)
+        wait.until(performance_results_loaded)
 
         self.driver.save_screenshot('screenshot.png')
         
     def select_performance_results_weightlifting(self):
-        path = "//div/a/span[text()='Performance Results: Weightlifting']"
+        path = "//td/a/span[text()='Performance Results: Weightlifting']"
         elem = self.driver.find_element_by_xpath(path)
         elem = elem.find_element_by_xpath('..')
         elem.click()
