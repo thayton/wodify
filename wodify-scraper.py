@@ -62,12 +62,53 @@ class WodifyScraper(object):
         wait = WebDriverWait(self.driver, 10)
         wait.until(admin_page_loaded)
 
-        self.driver.save_screenshot('screenshot.png')
+        #self.driver.save_screenshot('screenshot.png')
 
+    def select_reports_tab(self):
+        elem = self.driver.find_element_by_xpath("//div/a/span[text()='Reports']")
+        elem = elem.find_element_by_xpath('..')
+        elem.click()
+
+        def reports_loaded(driver):
+            elem = self.driver.find_element_by_xpath("//div/a/span[text()='Reports']")
+            parent_div = elem.find_element_by_xpath('../..')
+            return 'Menu_TopMenuActive' in parent_div.get_attribute('class')
+
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(reports_loaded)
+
+        #self.driver.save_screenshot('screenshot.png')
+
+    def select_performance_results(self):
+        elem = self.driver.find_element_by_xpath("//div/a[text()='Performance Results']")
+        elem.click()
+
+        def reports_loaded(driver):
+            path = "//div/a/span[text()='Performance Results: Weightlifting']"
+            try:
+                elem = self.driver.find_element_by_xpath(path)
+                return elem.is_displayed()
+            except NoSuchElementException:
+                return False
+
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(reports_loaded)
+
+        self.driver.save_screenshot('screenshot.png')
+        
+    def select_performance_results_weightlifting(self):
+        path = "//div/a/span[text()='Performance Results: Weightlifting']"
+        elem = self.driver.find_element_by_xpath(path)
+        elem = elem.find_element_by_xpath('..')
+        elem.click()
+        
     def scrape(self):
         self.driver.get(self.url)
         self.login()
         self.switch_to_wodify_admin()
+        self.select_reports_tab()
+        self.select_performance_results()
+        self.select_performance_results_weightlifting()
 
 if __name__ == '__main__':
     scraper = WodifyScraper()
