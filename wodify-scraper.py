@@ -120,25 +120,14 @@ class WodifyScraper(object):
 
         Select(elem).select_by_visible_text(text)
 
-        results_table_path = "//table[contains(@id, 'block_wtMainContent_wtPRSTable')]"
-        results_table_elem = self.driver.find_element_by_xpath(results_table_path)
-
-        print results_table_elem.id
-
         def all_times_loaded(driver):
-            try:
-                results_table_elem.text
-            except StaleElementReferenceException:
-                return True
-            except:
-                pass
-
-            return False
+            isactive = driver.execute_script('return outsystems.internal.$.active;')
+            return isactive == 0
             
         wait = WebDriverWait(self.driver, 20)
         wait.until(all_times_loaded)
 
-        self.driver.save_screenshot('screenshot.png')
+        #self.driver.save_screenshot('screenshot.png')
 
     def scrape(self):
         self.driver.get(self.url)
@@ -148,6 +137,7 @@ class WodifyScraper(object):
         self.select_performance_results()
         self.select_performance_results_weightlifting()
         self.select_date_all_time()
+        self.select_back_squat_component()
         print
 
 if __name__ == '__main__':
