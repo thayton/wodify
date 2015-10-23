@@ -9,6 +9,11 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 
+def outsystems_is_inactive(driver):
+    isactive = driver.execute_script('return outsystems.internal.$.active;')
+    print 'isactive=', isactive
+    return isactive == 0
+    
 class WodifyScraper(object):
     def __init__(self):
         self.url = 'http://login.wodify.com'
@@ -120,14 +125,27 @@ class WodifyScraper(object):
 
         Select(elem).select_by_visible_text(text)
 
-        def all_times_loaded(driver):
-            isactive = driver.execute_script('return outsystems.internal.$.active;')
-            return isactive == 0
-            
         wait = WebDriverWait(self.driver, 20)
-        wait.until(all_times_loaded)
+        wait.until(outsystems_is_inactive)
 
         #self.driver.save_screenshot('screenshot.png')
+
+    def select_back_squat_component(self):
+#        path = "//div/select[contains(@id, 'block_wtcbComponent')]"
+        # xpath 2.0 not supported so we mimic ends-with using substring
+        path = "//div/select[substring(@id, string-length(@id) - string-length('block_wtcbComponent') +1) = 'block_wtcbComponent']"
+        elem = self.driver.find_element_by_xpath(path)
+        text = 'Back Squat'
+
+        Select(elem).select_by_visible_text(text)
+
+        wait = WebDriverWait(self.driver, 120)
+        wait.until(outsystems_is_inactive)
+
+        self.driver.save_screenshot('screenshot.png')
+
+    def scrape_results(self):
+        pass
 
     def scrape(self):
         self.driver.get(self.url)
