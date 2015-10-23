@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
 
 class WodifyScraper(object):
     def __init__(self):
@@ -120,12 +120,14 @@ class WodifyScraper(object):
 
         Select(elem).select_by_visible_text(text)
 
-        results_div_path = "//div[contains(@id, 'block_wtMainContent_wtPRSTable_Wrapper']"
-        results_div_elem = self.driver.find_element_by_xpath(path)
+        results_table_path = "//table[contains(@id, 'block_wtMainContent_wtPRSTable')]"
+        results_table_elem = self.driver.find_element_by_xpath(results_table_path)
+
+        print results_table_elem.id
 
         def all_times_loaded(driver):
             try:
-                results_div_elem.text
+                results_table_elem.text
             except StaleElementReferenceException:
                 return True
             except:
@@ -133,7 +135,7 @@ class WodifyScraper(object):
 
             return False
             
-        wait = WebDriverWait(self.driver, 10)
+        wait = WebDriverWait(self.driver, 20)
         wait.until(all_times_loaded)
 
         self.driver.save_screenshot('screenshot.png')
