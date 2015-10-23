@@ -92,14 +92,52 @@ class WodifyScraper(object):
         wait = WebDriverWait(self.driver, 10)
         wait.until(performance_results_loaded)
 
-        self.driver.save_screenshot('screenshot.png')
+#        self.driver.save_screenshot('screenshot.png')
         
     def select_performance_results_weightlifting(self):
         path = "//td/a/span[text()='Performance Results: Weightlifting']"
         elem = self.driver.find_element_by_xpath(path)
         elem = elem.find_element_by_xpath('..')
         elem.click()
-        
+
+        def weightlifting_results_loaded(driver):
+            path = "//div[@class='filter_Wrapper']"
+            try:
+                elem = self.driver.find_element_by_xpath(path)
+                return elem.is_displayed()
+            except NoSuchElementException:
+                return False
+
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(weightlifting_results_loaded)
+
+        #self.driver.save_screenshot('screenshot.png')
+
+    def select_date_all_time(self):
+        path = "//div/select[contains(@id, 'block_wtcbDateRange')]"
+        elem = self.driver.find_element_by_xpath(path)
+        text = 'All Time'
+
+        Select(elem).select_by_visible_text(text)
+
+        results_div_path = "//div[contains(@id, 'block_wtMainContent_wtPRSTable_Wrapper']"
+        results_div_elem = self.driver.find_element_by_xpath(path)
+
+        def all_times_loaded(driver):
+            try:
+                results_div_elem.text
+            except StaleElementReferenceException:
+                return True
+            except:
+                pass
+
+            return False
+            
+        wait = WebDriverWait(self.driver, 10)
+        wait.until(all_times_loaded)
+
+        self.driver.save_screenshot('screenshot.png')
+
     def scrape(self):
         self.driver.get(self.url)
         self.login()
@@ -107,6 +145,8 @@ class WodifyScraper(object):
         self.select_reports_tab()
         self.select_performance_results()
         self.select_performance_results_weightlifting()
+        self.select_date_all_time()
+        print
 
 if __name__ == '__main__':
     scraper = WodifyScraper()
