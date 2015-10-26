@@ -142,10 +142,14 @@ class WodifyScraper(object):
         wait = WebDriverWait(self.driver, 120)
         wait.until(outsystems_is_inactive)
 
-        self.driver.save_screenshot('screenshot.png')
+        #self.driver.save_screenshot('screenshot.png')
 
     def scrape_results(self):
-        pass
+        path = "//a[contains(@id, 'block_wtbtnExport')/span[2]"
+        elem = self.driver.find_element_by_xpath(path)
+        elem.click()
+
+        self.driver.save_screenshot('screenshot.png')
 
     def scrape(self):
         self.driver.get(self.url)
@@ -156,6 +160,7 @@ class WodifyScraper(object):
         self.select_performance_results_weightlifting()
         self.select_date_all_time()
         self.select_back_squat_component()
+        self.scrape_results()
         print
 
 if __name__ == '__main__':
