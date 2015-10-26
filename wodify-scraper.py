@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import re
+import csv
 import time
 
 from bs4 import BeautifulSoup
@@ -17,6 +18,7 @@ def outsystems_is_inactive(driver):
 class WodifyScraper(object):
     def __init__(self):
         self.url = 'http://login.wodify.com'
+        self.writer = csv.writer(sys.stdout, quoting=csv.QUOTE_NONNUMERIC)
         self.username = 'nighthawk'
         self.password = 'wodifyhell'
         self.driver = webdriver.PhantomJS()
@@ -125,7 +127,7 @@ class WodifyScraper(object):
 
         Select(elem).select_by_visible_text(text)
 
-        wait = WebDriverWait(self.driver, 20)
+        wait = WebDriverWait(self.driver, 60)
         wait.until(outsystems_is_inactive)
 
         #self.driver.save_screenshot('screenshot.png')
@@ -144,12 +146,46 @@ class WodifyScraper(object):
 
         #self.driver.save_screenshot('screenshot.png')
 
-    def scrape_results(self):
-        path = "//a[contains(@id, 'block_wtbtnExport')/span[2]"
+    def export_results(self):
+#       path = "//a[contains(@id, 'block_wtbtnExport')/span[text()='Export']"
+        path = "//span[text()='Export']"
         elem = self.driver.find_element_by_xpath(path)
+        elem = elem.find_element_by_xpath('..')
         elem.click()
 
         self.driver.save_screenshot('screenshot.png')
+
+    def scrape_results(self, maxpages=None):
+        pageno = 1
+
+        while True:
+            s = BeautifulSoup(self.driver.page_source)
+            x = {'class': 'TableRecords'}
+            t = s.find('table', attrs=x)
+        
+            if not t:
+                return
+
+            for tr in t.findAll('tr'):
+                line = ['%s' % td.text for td in tr.findAll('td')]
+                self.writer.writerow(line)
+
+            if maxpages:
+                if pageno >= maxpages:
+                    break
+                
+            path = "//a[text()='next']"
+            try:
+                elem = self.driver.find_element_by_xpath(path)
+            except NoSuchElementException:
+                break
+
+            elem.click()
+
+            wait = WebDriverWait(self.driver, 120)
+            wait.until(outsystems_is_inactive)
+
+            pageno += 1
 
     def scrape(self):
         self.driver.get(self.url)
@@ -160,7 +196,7 @@ class WodifyScraper(object):
         self.select_performance_results_weightlifting()
         self.select_date_all_time()
         self.select_back_squat_component()
-        self.scrape_results()
+        self.scrape_results(maxpages=2)
         print
 
 if __name__ == '__main__':
