@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import re
+import sys
 import csv
 import time
 
@@ -167,7 +168,7 @@ class WodifyScraper(object):
                 return
 
             for tr in t.findAll('tr'):
-                line = ['%s' % td.text for td in tr.findAll('td')]
+                line = ['%s' % td.text.encode('utf8') for td in tr.findAll('td')]
                 self.writer.writerow(line)
 
             if maxpages:
